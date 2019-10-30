@@ -1,4 +1,4 @@
-This folder contains total 10 python scripts.
+This repository contains the code used to produce results in "IoT-enabled Autonomous System Collaboration forDisaster-Area Management" J Journal paper.
 
 - Ground_station
   1. calculate_cluster_center.py calculates the cluster center of the ground UGVs from their current location using K-mean clustering algorithm and send these information to the UAVs.(1)
