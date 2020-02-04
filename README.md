@@ -1,4 +1,7 @@
 
+# IoT-enabled Autonomous System collaboration for Disaster Area Managment
+
+![alt text](https://github.com/Abeni18/IoT-enabled-Autonomous-System-Collaboration-for-Disaster-Area-Management-/blob/master/landing_on_ugv%20(1).png?raw=true)
 
 This repository contains the code used to produce results in "IoT-enabled Autonomous System Collaboration forDisaster-Area Management" J Journal paper.
 - AADL model 
