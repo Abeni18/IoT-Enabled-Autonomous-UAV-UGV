@@ -1,6 +1,6 @@
 This repository contains the code used to produce results in "IoT-enabled Autonomous System Collaboration forDisaster-Area Management" J Journal paper.
 - AADL model 
-  The folder contains the source code used to verify the framework and the developed components using AADL formal methods. 
+  1. The folder contains the source code used to verify the framework and the developed components using AADL formal methods. 
 - Ground_station
   1. calculate_cluster_center.py calculates the cluster center of the ground UGVs from their current location using K-mean clustering algorithm and send these information to the UAVs.(1)
   2. visualize_clustering.py creats a live visualization of the clustering scenario.(1)
