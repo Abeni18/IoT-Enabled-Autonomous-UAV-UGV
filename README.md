@@ -3,7 +3,7 @@
 
 ![alt text](https://github.com/Abeni18/IoT-enabled-Autonomous-System-Collaboration-for-Disaster-Area-Management-/blob/master/landing_on_ugv%20(1).png?raw=true)
 
-This repository contains the code used to produce results in "IoT-enabled Autonomous System Collaboration forDisaster-Area Management" J Journal paper.
+This repository contains the source code used to produce results for "IoT-enabled Autonomous System Collaboration for Disaster Area Management" Journal paper.
 - AADL model 
   1. The folder contains the source code used to verify the framework and the developed components using AADL formal methods. 
 - Ground_station
