@@ -1,0 +1,172 @@
+package Aggies_UAV_mode_lat
+
+public
+
+
+abstract Accelero
+  features
+    Accelero_Out : out data port;
+    --- can be replace by the actual value from the data sheet but this is a typical latency value
+  flows
+    f1 : flow source Accelero_Out {latency => 100 us .. 300 us; };		
+end Accelero;
+
+abstract Gyro
+  features
+    Gyro_Out : out data port;
+     --- can be replace by the actual value from the data sheet but this is a typical latency value
+  flows
+    f1 : flow source Gyro_Out {latency => 100 us .. 300 us; };		
+ 
+ end Gyro;
+
+ abstract Magneto
+    features
+       Magneto_Out : out data port;
+    --- can be replace by the actual value from the data sheet but this is a typical latency value
+    flows
+       f1 : flow source Magneto_Out {latency => 100 us .. 300 us; };		
+    
+  end Magneto;
+  
+  abstract Raspberry_Pi_IOT
+  features
+    D1 : out data port;
+    D2 : in data port;
+    IOT_link_tx : out data port;
+    IOT_link_rx : in data port;
+    
+    --- the latency considered hear includes the delays introduced in the application at different points ( processing + delsy(..))
+   flows
+     f1 : flow path  D2-> IOT_link_tx {latency => 33 ms .. 44 ms; };	
+     f2 : flow path  IOT_link_rx-> D1 {latency => 33 ms .. 44 ms; };
+    
+  end Raspberry_Pi_IOT;
+  
+  abstract Raspberry_Pi_NAV
+  features
+    D1 : out data port;
+    D2 : in data port;
+    data_in : in data port;
+    cluster_out : out data port;
+    
+    --- the latency considered hear includes the delays introduced in the application at different points ( processing + delay(..))
+   flows
+     f1 : flow path  D2-> cluster_out {latency => 110 ms .. 156 ms; };	
+     f2 : flow path  data_in-> D1 {latency => 110 ms .. 156 ms; };		
+
+  end Raspberry_Pi_NAV;
+  
+  abstract Px4
+  features
+    D1 : out data port;
+    D2 : in data port;
+    gyro: in data port;
+    acc: in data port;
+    mag: in data port;
+    M1 : out data port;
+    M2 : out data port;
+    M3 : out data port;
+    M4 : out data port;
+    --- most of the delay occurred because of the Rasbery Pi NAV execution delay
+  	flows
+     f1 : flow path  acc -> m1 {latency => 118 ms .. 164 ms; };	
+     f2 : flow path  gyro -> m1 {latency => 118 ms .. 164 ms; };	
+     f3 : flow path  mag -> m1 {latency => 118 ms .. 164 ms; };	
+     f4 : flow path  D2 -> m1 {latency => 10015 us .. 11 ms; };	
+     f5 : flow path  D2 -> m2 {latency => 10015 us .. 11 ms; };	
+     f6 : flow path  D2 -> m3 {latency => 10015 us .. 11 ms; };	
+     f7 : flow path  D2 -> m4 {latency => 10015 us .. 11 ms; };	
+  end Px4;
+  
+  abstract ESC
+  features
+    M1 : out data port;
+    D1 : in data port;
+    -- typical values are from 30 khz -60 khz
+  flows
+     f1 : flow path  D1 -> m1 {latency => 16 us .. 33 us; };	
+  end ESC;
+  
+  abstract IOT_module
+  features
+    pi_tx : out data port;
+    pi_rx : in data port;
+    cloud_tx : out data port;
+    cloud_rx : in data port;
+    
+   flows
+     f1 : flow path  pi_rx -> pi_tx {latency => 10 us .. 30 us; };	
+     f2 : flow path  cloud_rx -> cloud_tx {latency => 10 us .. 30 us; };	
+
+  end IOT_module;
+  
+  
+  abstract Motors
+  features
+    Motor_In : in data port;
+    
+   -- Miniature Brushless DC Motors  DBH-0472 Models
+   -- mechanical time constant + electrical time constant : 1.14 ms + 0.042 ms = 1.2 ms
+   
+  flows
+    f1 : flow sink Motor_In {latency => 1 ms .. 2 ms; };
+    			
+    			
+  end Motors;
+
+
+  system UAV_Functional
+  end UAV_Functional;
+
+  system implementation UAV_Functional.impl
+  	subcomponents
+  	-- Sensor
+  	Accelero_px4: abstract Accelero;
+  	Gyro_px4    : abstract Gyro;
+  	Magneto_px4 : abstract magneto;
+    --  Computing
+    Raspi_IOT        : abstract Raspberry_Pi_IOT;
+    Raspi_NAV        : abstract Raspberry_Pi_NAV;
+    Px4     		 : abstract Px4;
+    ESC1    	     : abstract ESC;
+    ESC2    	     : abstract ESC;
+    ESC3    	     : abstract ESC;
+    ESC4    	     : abstract ESC;
+    IOT_mod          : abstract IOT_module;
+    --  Acting
+    Motor1 : abstract Motors;
+    Motor2 : abstract Motors;
+    Motor3 : abstract Motors;
+    Motor4 : abstract Motors;
+
+  connections
+    C1 : port Raspi_IOT.D1     -> Raspi_NAV.D2;
+    C1_1: port Raspi_IOT.IOT_link_tx -> IOT_mod.pi_rx;
+    C1_2: port IOT_mod.pi_tx -> Raspi_IOT.IOT_link_rx;
+    C2 : port Raspi_NAV.D1     -> Raspi_IOT.D2;
+    C2_1 : port Raspi_NAV.cluster_out  -> px4.D2;
+    C2_2 : port px4.D1 -> Raspi_NAV.data_in;
+    C3: port Accelero_px4.Accelero_Out -> px4.acc;
+    C3_1: port Gyro_px4.Gyro_Out -> px4.gyro;
+    C3_2: port Magneto_px4.Magneto_Out -> px4.mag;
+    C4 : port Px4.M1        -> ESC1.D1;
+    C5 : port Px4.M2        -> ESC2.D1;
+    C6 : port Px4.M3        -> ESC3.D1;
+    C7 : port Px4.M4        -> ESC4.D1;
+    
+    
+    C8 : port ESC1.M1       -> Motor1.Motor_In;
+    C9 : port ESC2.M1       -> Motor2.Motor_In;
+    C10: port ESC3.M1       -> Motor3.Motor_In;
+    C11: port ESC4.M1       -> Motor4.Motor_In;
+  flows
+    f_motor1 : end to end flow Accelero_px4.f1 -> C3 -> Px4.f1 -> C4 -> ESC1.f1 -> C8 -> Motor1.f1 { latency => 110 ms .. 180 ms;};
+    --f_sonar2 : end to end flow Sonar2.f1 -> C1_2 -> Wemos.f2 -> C1_6 -> Adafruit.f2 -> C3_1 -> Motor2.f1 { latency => 80 ms .. 130 ms;};
+    --f_sonar3 : end to end flow Sonar3.f1 -> C1_3 -> Wemos.f3 -> C1_6 -> Adafruit.f3 -> C3_2 -> Motor3.f1 { latency => 80 ms .. 130 ms;};
+    --f_sonar4 : end to end flow Sonar4.f1 -> C1_4 -> Wemos.f4 -> C1_6 -> Adafruit.f4 -> C3_3 -> Motor4.f1 { latency => 80 ms .. 130 ms;};
+       
+      
+  end Aggies_Functional.impl;
+
+end Aggies_UAV_mode_lat;

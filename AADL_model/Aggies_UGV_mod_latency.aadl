@@ -1,0 +1,173 @@
+package Aggies_UGV_mod_latency
+
+public
+
+  abstract Wemos_D1
+  features
+    sonar1 : in data port;
+    sonar2 : in data port;
+    sonar3 : in data port;
+    sonar4 : in data port;
+    wheelEncoder: in data port;
+    tx : out data port;
+    rx : in data port;
+    txrx: in out data port;
+    --- the latency considered hear includes the delays introduced in the application at different points ( processing + delay(..))
+   flows
+     f1 : flow path  sonar1-> txrx {latency => 33 ms .. 44 ms; };	
+     f2 : flow path  sonar2-> txrx {latency => 33 ms .. 44 ms; };		
+     f3 : flow path  sonar3-> txrx {latency => 33 ms .. 44 ms; };		
+     f4 : flow path  sonar4-> txrx {latency => 33 ms .. 44 ms; };			
+
+  end Wemos_D1;
+  
+  abstract Adafruit_sw
+  features
+    txrx : in out data port;
+    m1 : out data port;
+    m2 : out data port;
+    m3 : out data port;
+    m4 : out data port;
+    --- speed control can run from 64 khz to 1 khz
+    --- plus added delays ( 10 ms)
+    flows
+     f1 : flow path  txrx -> m1 {latency => 10015 us .. 11 ms; };	
+     f2 : flow path  txrx -> m2 {latency => 10015 us .. 11 ms; };	
+     f3 : flow path  txrx -> m3 {latency => 10015 us .. 11 ms; };	
+     f4 : flow path  txrx -> m4 {latency => 10015 us .. 11 ms; };		
+
+  end Adafruit_sw;
+  
+  abstract Iot_ESP8266
+  features
+    tx : out data port;
+    led : out data port;
+    buzz : out data port;
+    humdity : in  data port;
+    rx : in data port;
+    temp : in data port;
+  flows
+      f1 : flow path humdity -> tx {latency => 100 us .. 300 us; };		
+      f2 : flow path temp -> tx {latency => 100 us .. 300 us; };		
+  end Iot_ESP8266;
+  
+  abstract temprature_sensor
+  features
+    temp : out data port;
+    flows
+     f1 : flow source temp {latency => 100 us .. 300 us; };		
+
+  end temprature_sensor;
+  
+  abstract humidity_sensor
+  features
+    humidity : out data port;
+    flows
+      f1 : flow source humidity {latency => 100 us .. 300 us; };		
+
+  end humidity_sensor;
+  
+  abstract led
+  features
+    cmd_led : in data port;
+    flows
+      f1 : flow sink cmd_led {latency => 100 us .. 300 us; };		
+  end led;
+  
+  abstract buzzer
+  features
+    cmd_buz : in data port;
+   flows
+    f1 : flow sink cmd_buz {latency => 100 us .. 300 us; };		
+
+  end buzzer;
+  
+  
+  abstract Motors
+  features
+    Motor_In : in data port;
+    -- SERVO MOTOR SG90
+    -- operating frequency 50 hz or 20ms
+  flows
+    f1 : flow sink Motor_In {latency => 20 ms .. 25 ms; };
+    			
+  end Motors;
+  
+  abstract Sonar
+  features
+    sonar_out : out data port;
+    -- HC - SR04
+    -- Operating frequency 40 Hz or 25 ms
+  flows
+    f1 : flow source sonar_out {latency => 25 ms .. 30 ms; };
+    			
+  end Sonar;
+
+
+  abstract WheelEncoder
+  features
+    WheelEncoder_out : out data port;
+    
+  flows
+    f1 : flow source WheelEncoder_out {latency => 100 us .. 500 us; };
+    			
+  end WheelEncoder;
+
+  system UGV_Functional
+  end UGV_Functional;
+
+  system implementation UGV_Functional.impl
+  subcomponents
+      --  Computing
+    Wemos        : abstract Wemos_D1;
+    Adafruit     : abstract Adafruit_sw;
+    Iot_ESP     : abstract Iot_ESP8266;
+    
+    --- Sensor
+    Sonar1    	     : abstract Sonar;
+    Sonar2    	     : abstract Sonar;
+    Sonar3    	     : abstract Sonar;
+    Sonar4    	     : abstract Sonar;
+    WheelEn            : abstract WheelEncoder;
+    humidity        : abstract humidity_sensor;
+    temp            : abstract temprature_sensor;
+    --  Acting
+    Motor1 : abstract Motors;
+    Motor2 : abstract Motors;
+    Motor3 : abstract Motors;
+    Motor4 : abstract Motors;
+    buzzer : abstract buzzer;
+    led    : abstract led;
+
+  connections
+    C1 : port Wemos.tx     -> Iot_ESP.rx;
+    C1_1: port Sonar1.sonar_out -> Wemos.Sonar1;
+    C1_2: port Sonar2.sonar_out -> Wemos.Sonar2;
+    C1_3: port Sonar3.sonar_out -> Wemos.Sonar3;
+    C1_4: port Sonar4.sonar_out -> Wemos.Sonar4;
+    C1_5: port WheelEn.WheelEncoder_out -> Wemos.WheelEncoder;
+    C1_6: port Wemos.txrx     -> Adafruit.txrx;
+   
+    
+    C2 : port  humidity.humidity -> Iot_ESP.humdity;
+    C2_1 : port temp.temp  -> Iot_ESP.temp;
+    C2_2 : port Iot_ESP.tx -> Wemos.rx;
+    C2_3 : port Iot_ESP.led -> led.cmd_led;
+    C2_4 : port Iot_ESP.buzz -> buzzer.cmd_buz;
+    
+    
+    C3 : port Adafruit.M1        -> Motor1.Motor_In;
+    C3_1 : port Adafruit.M2        -> Motor2.Motor_In;
+    C3_2 : port Adafruit.M3        -> Motor3.Motor_In;
+    C3_3 : port Adafruit.M4        -> Motor4.Motor_In;
+    
+   flows
+    f_sonar1 : end to end flow Sonar1.f1 -> C1_1 -> Wemos.f1 -> C1_6 -> Adafruit.f1 -> C3 -> Motor1.f1 { latency => 80 ms .. 130 ms;};
+    f_sonar2 : end to end flow Sonar2.f1 -> C1_2 -> Wemos.f2 -> C1_6 -> Adafruit.f2 -> C3_1 -> Motor2.f1 { latency => 80 ms .. 130 ms;};
+    f_sonar3 : end to end flow Sonar3.f1 -> C1_3 -> Wemos.f3 -> C1_6 -> Adafruit.f3 -> C3_2 -> Motor3.f1 { latency => 80 ms .. 130 ms;};
+    f_sonar4 : end to end flow Sonar4.f1 -> C1_4 -> Wemos.f4 -> C1_6 -> Adafruit.f4 -> C3_3 -> Motor4.f1 { latency => 80 ms .. 130 ms;};
+       
+  end UGV_Functional.impl;
+
+	
+end Aggies_UGV_mod_latency;
