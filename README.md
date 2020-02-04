@@ -1,3 +1,5 @@
+
+
 This repository contains the code used to produce results in "IoT-enabled Autonomous System Collaboration forDisaster-Area Management" J Journal paper.
 - AADL model 
   1. The folder contains the source code used to verify the framework and the developed components using AADL formal methods. 
