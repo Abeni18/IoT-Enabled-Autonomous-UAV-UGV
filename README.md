@@ -1,7 +1,9 @@
 
 # IoT-enabled Autonomous System collaboration for Disaster Area Managment
+[![Watch the video](https://i.imgur.com/vKb2F1B.png)](https://www.youtube.com/watch?v=oJjjpAHFQfg&feature=youtu.be)
 
-![alt text](https://www.youtube.com/watch?v=oJjjpAHFQfg&feature=youtu.be)
+
+![alt text](https://github.com/Abeni18/IoT-enabled-Autonomous-System-Collaboration-for-Disaster-Area-Management-/blob/master/landing_on_ugv%20(1).png?raw=true)
 
 
 This repository contains the source code used to produce results for "IoT-enabled Autonomous System Collaboration for Disaster Area Management" Journal paper.
